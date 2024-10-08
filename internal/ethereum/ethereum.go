@@ -68,21 +68,21 @@ func GetERC20Balance(client *ethclient.Client, address, tokenAddress string) (st
 	ctx := context.Background()
 	output, err := client.CallContract(ctx, msg, nil)
 	if err != nil {
-		return "nil", err
+		return "", err
 	}
 
 	results, err := erc20ABI.Unpack("balanceOf", output)
 	if err != nil {
-		return "nil", err
+		return "", err
 	}
 
 	if len(results) == 0 {
-		return "nil", errors.New("no balance returned")
+		return "", errors.New("no balance returned")
 	}
 
 	balance, ok := results[0].(*big.Int)
 	if !ok {
-		return "nil", errors.New("unable to type assert balance to *big.Int")
+		return "", errors.New("unable to type assert balance to *big.Int")
 	}
 
 	balanceInEth := new(big.Float).Quo(new(big.Float).SetInt(balance), big.NewFloat(math.Pow10(18)))
