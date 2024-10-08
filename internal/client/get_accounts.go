@@ -11,7 +11,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -31,7 +30,7 @@ func RunGetAccounts() {
 
 	client := proto.NewAccountServiceClient(conn)
 
-	addresses, err := readAddressesFromFile("addresses.txt")
+	addresses, err := readAddressesFromFile("internal/client/addresses.txt")
 	if err != nil {
 		log.Fatalf("Error reading addresses: %v", err)
 	}
@@ -43,8 +42,8 @@ func RunGetAccounts() {
 	fmt.Printf("Executing GetAccounts for %d addresses...\n", addressCount)
 
 	//var wg sync.WaitGroup
-	var mu sync.Mutex
-	index := 1
+	//var mu sync.Mutex
+	//index := 1
 
 	//const maxConcurrency = 10
 	//semaphore := make(chan struct{}, maxConcurrency)
@@ -61,7 +60,7 @@ func RunGetAccounts() {
 	//
 	//wg.Wait()
 
-	callGetAccounts(client, addresses[:addressCount], tokenAddress, &index, &mu)
+	callGetAccounts(client, addresses[:addressCount], tokenAddress)
 }
 
 func readAddressesFromFile(filename string) ([]string, error) {
@@ -115,7 +114,7 @@ func getAddressCountFromUser(maxCount int) int {
 	}
 }
 
-func callGetAccounts(client proto.AccountServiceClient, addresses []string, tokenAddress string, index *int, mu *sync.Mutex) {
+func callGetAccounts(client proto.AccountServiceClient, addresses []string, tokenAddress string) {
 	stream, err := client.GetAccounts(context.Background())
 	if err != nil {
 		log.Fatalf("Error creating stream: %v", err)
@@ -135,16 +134,16 @@ func callGetAccounts(client proto.AccountServiceClient, addresses []string, toke
 	}
 
 	start := time.Now()
+	index := 1
 
 	for {
 		resp, err := stream.Recv()
 		if err != nil {
 			break
 		}
-		mu.Lock()
-		fmt.Printf("%d. Address: %s, Balance: %s\n", *index, resp.GetEthereumAddress(), resp.GetErc20Balance())
-		*index++
-		mu.Unlock()
+
+		fmt.Printf("%d. Address: %s, Balance: %s\n", index, resp.GetEthereumAddress(), resp.GetErc20Balance())
+		index++
 	}
 
 	elapsed := time.Since(start)

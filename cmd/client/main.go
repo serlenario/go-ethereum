@@ -15,7 +15,7 @@ func main() {
 		return
 	}
 
-	client.RunGetAccount()
+	//client.RunGetAccount()
 
 	client.RunGetAccounts()
 }

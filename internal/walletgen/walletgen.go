@@ -4,17 +4,21 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/crypto"
 	"os"
+	"path/filepath"
 )
 
 func GenerateWallets(fileName string, numberOfWallets int) error {
-	if _, err := os.Stat(fileName); err == nil {
+	dir := "internal/client"
+	filePath := filepath.Join(dir, fileName)
+
+	if _, err := os.Stat(filePath); err == nil {
 		fmt.Printf("File %s already exists, creation skipped.\n", fileName)
 		return nil
 	} else if !os.IsNotExist(err) {
 		return fmt.Errorf("error checking file: %v", err)
 	}
 
-	file, err := os.Create(fileName)
+	file, err := os.Create(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to create file: %v", err)
 	}
